@@ -1,0 +1,44 @@
+Only first syntax error (or other?) is reported and process stopped
+
+No semi-colons needed or allowed
+
+No access modifiers
+
+Comments:  just /* .... */ style
+
+Object-based (no inheritance, interfaces, enumerations, ... )
+
+No primitive data types!  
+
+No packages, no imports
+
+One nice class to do all typical stuff --- class Tool
+
+control structures:
+
+   for loop
+   
+   if ( <bool> ) {
+      <statements>
+   }
+   else {
+      <statements>
+   }
+
+OR:
+
+   if ( <bool> ) {
+      <statements>
+   }
+
+No arrays---just ArrayList
+
+Need String   (only way to get specific numbers into program---literals like
+                "3.14" )
+
+No static stuff, only instance stuff
+
+   
+
+
+
