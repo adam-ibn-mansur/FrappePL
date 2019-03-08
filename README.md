@@ -1,4 +1,4 @@
-# Frappe: a Programming Language derivative of Java and Python, but are nothing like Java and Python.
+# Frappe: a Programming Language derivative of Java and Python.
 Implementation of a programming language by the name of Frappe.
 
 A Principle of Programming Languages project conducted by:
