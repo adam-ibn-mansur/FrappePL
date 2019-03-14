@@ -16,6 +16,45 @@ public class Parser {
     lex = lexer;
   }
 
+  public Node parseClasses() {
+    System.out.println("-----> parsing <classes>:");
+    Node first = parseClass();
+    Token token = lex.getNextToken();
+    if ( token.isKind("eof") ) {
+      return new Node( "classes", first, null, null, null)
+    }
+    else {
+      lex.putBackToken();
+      Node second = parseClasses();
+      return new Node( "classes", first, second, null, null);
+    }
+  }
+
+  public Node parseClass() {
+    System.out.println("-----> parsing <class>:");
+
+    Token token = lex.getNextToken();
+    errorCheck(token, "class");
+
+    token = lex.getNextToken();
+    errorCheck(token, "classname");
+    classname = token.details;
+
+//We left off here
+
+    token = lex.getNextToken();
+    errorCheck(token, "{");
+
+    token = lex.getNextToken();
+    errorCheck(token, "}");
+    Node members = parseMembers();
+    return new Node ( "class", classname, members, null, null);
+  }
+
+  public Node parseMembers() {
+    System.out.println("------> parsing <members>");
+  }
+
   public Node parseProgram() {
     System.out.println("-----> parsing <program>:");
     Node first = parseFuncCall();
