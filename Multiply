@@ -1,0 +1,21 @@
+class Multiply {
+    a
+    b
+    Multiply(c, d) {
+        a = c
+        b = d
+        return result()
+    }
+
+    result() {
+        e = a.mult(b)
+        IO.print(e)
+        return e
+    }
+}
+
+class Main {
+    main() {
+        e = new Multiply(75, 75);
+    }
+}
