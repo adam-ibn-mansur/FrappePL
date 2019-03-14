@@ -80,6 +80,9 @@ public class Lexer {
 						data += (char) sym;
 						state = 12;
 					}
+					else if ( sym == -1 ) {
+						state = 13;
+					}
 					else {
 						error("Error in lexical analysis phase with symbol "
 						+ sym + " in state " + state );
@@ -87,7 +90,7 @@ public class Lexer {
 				}
 
 				else if ( state == 2 ) {
-					if ( Character.isLowerCase(sym) || digit(sym) ) {
+					if ( Character.isLetter(sym) || digit(sym) ) {
 						data += (char) sym;
 						state = 2;
 					}
@@ -98,7 +101,7 @@ public class Lexer {
 				}
 
 				else if ( state == 3 ) {
-					if ( Character.isLowerCase(sym)|| digit(sym) ) {
+					if ( Character.isLetter(sym)|| digit(sym) ) {
 						data += (char) sym;
 						state = 3;
 					}
@@ -114,7 +117,7 @@ public class Lexer {
 						data += (char) sym;
 						state = 4;
 					}
-					else if (sym == "\\") {
+					else if (sym == '\\') {
 						state = 5;
 					}
 					else if (sym == '"') {
@@ -150,7 +153,7 @@ public class Lexer {
 				else if ( state == 7 ) {
 					if ( digit(sym) ) {
 						escChar += (char) sym;
-						data += (char) Integer.ParseInt(escChar);
+						data += (char) Integer.parseInt(escChar);
 						state = 4;
 					}
 					else {
@@ -206,6 +209,9 @@ public class Lexer {
 					putBackSymbol(sym);
 					done = true;
 				}
+				else if (state == 13) {
+					done = true;
+				}
 
 			}while( !done );
 
@@ -215,9 +221,11 @@ public class Lexer {
 			if ( state == 2 ) {
 				// now anything starting with letter is either a
 				// key word or a "var"
-				if ( data.equals("def") || data.equals("end") ||
-				data.equals("if") || data.equals("else") ||
-				data.equals("return")
+				if ( data.equals("class") || data.equals("static") ||
+				data.equals("for") || data.equals("return") ||
+				data.equals("if") || data.equals("else") || data.equals("new") ||
+				data.equals("void") || data.equals("null") || data.equals("this") ||
+				data.equals("true") || data.equals("false")
 				) {
 					return new Token( data, "" );
 				}
@@ -225,19 +233,21 @@ public class Lexer {
 					return new Token( "var", data );
 				}
 			}
-			else if ( state == 3 || state == 4 ) {
-				return new Token( "num", data );
-			}
-			else if ( state == 7 ) {
-				return new Token( "string", data );
+			else if ( state == 3 ) {
+				return new Token( "classname", data );
 			}
 			else if ( state == 8 ) {
-				return new Token( "single", data );
+				return new Token( "string", data );
 			}
-			else if ( state == 9 ) {
+			else if ( state == 9 || state == 11) {
+				return new Token( "num", data );
+			}
+			else if ( state == 12 ) {
+				return new Token( data, "" );
+			}
+			else if ( state == 13 ) {
 				return new Token( "eof", data );
 			}
-
 			else {// Lexer error
 				error("somehow Lexer FA halted in bad state " + state );
 				return null;
