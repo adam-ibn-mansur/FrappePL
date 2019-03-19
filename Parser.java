@@ -1,8 +1,8 @@
 /*
 This class provides a recursive descent parser
-for Corgi (the new version),
+for Frappe (the new version),
 creating a parse tree which can be interpreted
-to simulate execution of a Corgi program
+to simulate execution of a Frappe program
 */
 
 import java.util.*;
@@ -14,6 +14,16 @@ public class Parser {
 
   public Parser( Lexer lexer ) {
     lex = lexer;
+  }
+
+  public Node parseProgram() {
+      System.out.prinln("-----> parsing <program>:");
+      Node prgrm;
+      Token token = lex.getNextToken();
+      errorCheck(token, "class");
+      lex.putBackToken();
+      prgrm = parseClasses();
+      return new Node("program", prgrm, null, null);
   }
 
   public Node parseClasses() {
@@ -32,42 +42,110 @@ public class Parser {
 
   public Node parseClass() {
     System.out.println("-----> parsing <class>:");
-
     Token token = lex.getNextToken();
     errorCheck(token, "class");
-
     token = lex.getNextToken();
     errorCheck(token, "classname");
-    classname = token.details;
-
-//We left off here
-
+    String classname = token.details;
     token = lex.getNextToken();
     errorCheck(token, "{");
-
+    Node members = parseMembers();
     token = lex.getNextToken();
     errorCheck(token, "}");
-    Node members = parseMembers();
     return new Node ( "class", classname, members, null, null);
   }
 
   public Node parseMembers() {
     System.out.println("------> parsing <members>");
+    Token token = lex.getNextToken();
+    Node first = parseMember();
+    if ( token.isKind("}") ) {
+      return new Node( "member", first, null, null, null)
+    }
+    else {
+      lex.putBackToken();
+      Node second = parseMembers();
+      return new Node( "member", first, second, null, null);
+    }
   }
 
-  public Node parseProgram() {
-    System.out.println("-----> parsing <program>:");
-    Node first = parseFuncCall();
+  public Node parseMember() {
+    System.out.println("------> parsing <member>:");
     Token token = lex.getNextToken();
-    if ( token.isKind("eof") ) {
-      return new Node( "program", first, null, null );
+    // errorCheck(token, "");
+    if( token.isKind("static") ) {
+//wewert
+      lex.getNextToken();
+      token = lex.getNextToken();
+      if ( token.isKind("(") ) {
+        lex.putBackToken();
+        lex.putBackToken();
+        lex.putBackToken();
+        Node staticMethod = parseStaticMethod();
+        return new Node("member", staticMethod, null, null);
+      }
+      else {
+        Node staticField = parseStaticField();
+        return new Node("member", staticField, null, null);
+      }
     }
-    else {// have a funcDef
-      lex.putBackToken( token );
-      Node second = parseFuncDefs();
-      return new Node("program", first, second, null );
+    else if ( token.isKind("classname") ) {
+      lex.putBackToken();
+      Node constructor = parseConstructor();
+      return new Node("member", constructor, null, null);
+    } else if ( token.isKind("name") ) {
+        token = lex.getNextToken();
+        if( token.isKind("(") ) {
+            lex.putBackToken().putBackToken();
+            Node insMethod = parseInstanceMethod();
+            return new Node("member", insMethod, null, null);
+        }
+        else {
+          lex.putBackToken().putBackToken();
+          Node insField = parseInstanceField();
+          return new Node("member", insField, null, null);
+        }
+    } else {
+      System.out.println("There is an error in parseMember()");
     }
   }
+
+  public Node parseStaticField() {
+    System.out.println("------> parsing <member>");
+    Node  expr;
+    Token token = lex.getNextToken();
+    errorCheck(token, "static");
+    token = lex.getNextToken();
+    errorCheck(token, "name");
+    String name = token.details;
+
+    token = lex.getNextToken();
+    if (token.isKind("=") ) {
+      expr = parseExpression();
+    } else {
+      lex.putBackToken();
+    }
+
+    return new Node("staticfield", name, expr, null, null);
+  }
+
+  public Node parseExpression() {
+    //do something
+  }
+
+  // public Node parseProgram() {
+  //   System.out.println("-----> parsing <program>:");
+  //   Node first = parseFuncCall();
+  //   Token token = lex.getNextToken();
+  //   if ( token.isKind("eof") ) {
+  //     return new Node( "program", first, null, null );
+  //   }
+  //   else {// have a funcDef
+  //     lex.putBackToken( token );
+  //     Node second = parseFuncDefs();
+  //     return new Node("program", first, second, null );
+  //   }
+  // }
 
   public Node parseFuncDefs() {
     System.out.println("-----> parsing <funcDefs>:");
@@ -124,7 +202,8 @@ public class Parser {
       token = lex.getNextToken();
 
       if ( token.isKind( "end" ) ) {// no statements
-        return new Node( "funcDef", name.getDetails(), first, null, null );
+        return new       if( token.isKind("classes"));
+Node( "funcDef", name.getDetails(), first, null, null );
       }
       else {// have statements
         lex.putBackToken( token );
