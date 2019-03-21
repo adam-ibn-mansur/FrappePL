@@ -134,42 +134,16 @@ public class Parser {
 
   public Node parseStaticMethod() {
     System.out.println("------> parsing <staticField>");
-    Node statements;
-    Node params;
-
     Token token = lex.getNextToken();
     errorCheck(token, "static");
 
     token = lex.getNextToken();
     errorCheck(token, "name");
+    String staticMethodName = token.details;
 
-    token = lex.getNextToken();
-    errorCheck(token, "(");
+    Node restOfMethod = parseRestOfMethod();
 
-    token = lex.getNextToken();
-    if ( token.isKind(")") ) {
-      token.getNextToken();
-      errorCheck(token, "{");
-      statements = parseStatements();
-
-      token.getNextToken();
-      errorCheck(token, "}");
-      return new Node ("staticMethod", name, statements, null, null);
-    }
-    lex.putBackToken();
-    params = parseParams();
-
-    token.getNextToken();
-    errorCheck(token, ")");
-
-    token.getNextToken();
-    errorCheck(token, "{");
-    statements = parseStatements();
-
-    token.getNextToken();
-    errorCheck(token, "}");
-    return new Node ("staticMethod", name, params, statements, null, null);
-  }
+    return new Node("static", staticMethodName, restOfMethod, null, null);
 }
 
 public Node parseConstructor() {
