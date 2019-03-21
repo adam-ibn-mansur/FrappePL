@@ -130,6 +130,7 @@ public class Parser {
     }
   }
 
+<<<<<<< HEAD
   public Node parseMethodBody() {
     System.out.println("-----> parsing <methodBody>:");
     Token token = lex.getNextToken();
@@ -146,6 +147,21 @@ public class Parser {
       }
     }
   }
+=======
+  public Node parseStaticMethod() {
+    System.out.println("------> parsing <staticField>");
+    Token token = lex.getNextToken();
+    errorCheck(token, "static");
+
+    token = lex.getNextToken();
+    errorCheck(token, "name");
+    String staticMethodName = token.details;
+
+    Node restOfMethod = parseRestOfMethod();
+
+    return new Node("static", staticMethodName, restOfMethod, null, null);
+}
+>>>>>>> 5e96c4c6fbc9438150efc6251b91ca650e3a1fff
 
   public Node parseStatements() {
     System.out.println("-----> parsing <statements>:");
