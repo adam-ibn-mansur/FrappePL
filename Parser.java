@@ -17,7 +17,7 @@ public class Parser {
   }
 
   public Node parseProgram() {
-      System.out.prinln("-----> parsing <program>:");
+      System.out.println("-----> parsing <program>:");
       Node prgrm;
       Token token = lex.getNextToken();
       errorCheck(token, "class");
@@ -44,12 +44,15 @@ public class Parser {
     System.out.println("-----> parsing <class>:");
     Token token = lex.getNextToken();
     errorCheck(token, "class");
+
     token = lex.getNextToken();
     errorCheck(token, "classname");
     String classname = token.details;
+
     token = lex.getNextToken();
     errorCheck(token, "{");
     Node members = parseMembers();
+
     token = lex.getNextToken();
     errorCheck(token, "}");
     return new Node ( "class", classname, members, null, null);
@@ -74,7 +77,7 @@ public class Parser {
     Token token = lex.getNextToken();
     // errorCheck(token, "");
     if( token.isKind("static") ) {
-//wewert
+      //wewert
       lex.getNextToken();
       token = lex.getNextToken();
       if ( token.isKind("(") ) {
@@ -111,26 +114,80 @@ public class Parser {
   }
 
   public Node parseStaticField() {
-    System.out.println("------> parsing <member>");
-    Node  expr;
+    System.out.println("------> parsing <staticField>");
     Token token = lex.getNextToken();
     errorCheck(token, "static");
+
     token = lex.getNextToken();
     errorCheck(token, "name");
     String name = token.details;
 
     token = lex.getNextToken();
     if (token.isKind("=") ) {
-      expr = parseExpression();
+      Node expr = parseExpression();
+      return new Node("staticfield", name, expr, null, null);
     } else {
       lex.putBackToken();
+      return new Node ("staticfield", name, null, null);
     }
-
-    return new Node("staticfield", name, expr, null, null);
   }
 
-  public Node parseExpression() {
-    //do something
+  public Node parseStaticMethod() {
+    System.out.println("------> parsing <staticField>");
+    Node statements;
+    Node params;
+
+    Token token = lex.getNextToken();
+    errorCheck(token, "static");
+
+    token = lex.getNextToken();
+    errorCheck(token, "name");
+
+    token = lex.getNextToken();
+    errorCheck(token, "(");
+
+    token = lex.getNextToken();
+    if ( token.isKind(")") ){
+      token.getNextToken();
+      errorCheck(token, "{");
+      statements = parseStatements();
+
+      token.getNextToken();
+      errorCheck(token, "}");
+      return new Node ("staticMethod", name, statements, null, null);
+
+    } else {
+      lex.putBackToken();
+      params = parseParams();
+
+      token.getNextToken();
+      errorCheck(token, ")");
+
+      token.getNextToken();
+      errorCheck(token, "{");
+      statements = parseStatements();
+
+      token.getNextToken();
+      errorCheck(token, "}");
+      return new Node ("staticMethod", name, params, statements, null, null);
+    }
+  }
+
+  public Node parseConstructor() {
+    //stuff
+  }
+
+  public Node parseInstanceField() {
+    System.out.println("------> parsing <instanceField>");
+    Token token = lex.getNextToken();
+    errorCheck(token, "name");
+
+    String insFieldName = token.details;
+    return new Node ("instancefield", insFieldName, null, null);
+  }
+
+  public Node parseInstanceMethod() {
+    //stuff
   }
 
   // public Node parseProgram() {
@@ -147,75 +204,75 @@ public class Parser {
   //   }
   // }
 
-  public Node parseFuncDefs() {
-    System.out.println("-----> parsing <funcDefs>:");
-
-    Node first = parseFuncDef();
-
-    // look ahead to see if there are more funcDef's
-    Token token = lex.getNextToken();
-
-    if ( token.isKind("eof") ) {
-      return new Node( "funcDefs", first, null, null );
-    }
-    else {
-      lex.putBackToken( token );
-      Node second = parseFuncDefs();
-      return new Node( "funcDefs", first, second, null );
-    }
-  }
-
-  public Node parseFuncDef() {
-    System.out.println("-----> parsing <funcDef>:");
-
-    Token token = lex.getNextToken();
-    errorCheck( token, "def" );
-
-    Token name = lex.getNextToken();  // the function name
-    errorCheck( name, "var" );
-
-    token = lex.getNextToken();
-    errorCheck( token, "single", "(" );
-
-    token = lex.getNextToken();
-
-    if ( token.matches("single", ")" )) {// no params
-
-      token = lex.getNextToken();
-      if ( token.isKind("end") ) {// no statements
-        return new Node("funcDef", name.getDetails(), null, null, null );
-      }
-      else {// have a statement
-        lex.putBackToken( token );
-        Node second = parseStatements();
-        token = lex.getNextToken();
-        errorCheck( token, "end" );
-        return new Node("funcDef", name.getDetails(), null, second, null );
-      }
-    }// no params
-    else {// have params
-      lex.putBackToken( token );
-      Node first = parseParams();
-      token = lex.getNextToken();
-      errorCheck( token, "single", ")" );
-
-      token = lex.getNextToken();
-
-      if ( token.isKind( "end" ) ) {// no statements
-        return new       if( token.isKind("classes"));
-Node( "funcDef", name.getDetails(), first, null, null );
-      }
-      else {// have statements
-        lex.putBackToken( token );
-        Node second = parseStatements();
-        token = lex.getNextToken();
-        errorCheck( token, "end" );
-        return new Node("funcDef", name.getDetails(), first, second, null );
-      }
-
-    }// have params
-
-  }// parseFuncDef
+//   public Node parseFuncDefs() {
+//     System.out.println("-----> parsing <funcDefs>:");
+//
+//     Node first = parseFuncDef();
+//
+//     // look ahead to see if there are more funcDef's
+//     Token token = lex.getNextToken();
+//
+//     if ( token.isKind("eof") ) {
+//       return new Node( "funcDefs", first, null, null );
+//     }
+//     else {
+//       lex.putBackToken( token );
+//       Node second = parseFuncDefs();
+//       return new Node( "funcDefs", first, second, null );
+//     }
+//   }
+//
+//   public Node parseFuncDef() {
+//     System.out.println("-----> parsing <funcDef>:");
+//
+//     Token token = lex.getNextToken();
+//     errorCheck( token, "def" );
+//
+//     Token name = lex.getNextToken();  // the function name
+//     errorCheck( name, "var" );
+//
+//     token = lex.getNextToken();
+//     errorCheck( token, "single", "(" );
+//
+//     token = lex.getNextToken();
+//
+//     if ( token.matches("single", ")" )) {// no params
+//
+//       token = lex.getNextToken();
+//       if ( token.isKind("end") ) {// no statements
+//         return new Node("funcDef", name.getDetails(), null, null, null );
+//       }
+//       else {// have a statement
+//         lex.putBackToken( token );
+//         Node second = parseStatements();
+//         token = lex.getNextToken();
+//         errorCheck( token, "end" );
+//         return new Node("funcDef", name.getDetails(), null, second, null );
+//       }
+//     }// no params
+//     else {// have params
+//       lex.putBackToken( token );
+//       Node first = parseParams();
+//       token = lex.getNextToken();
+//       errorCheck( token, "single", ")" );
+//
+//       token = lex.getNextToken();
+//
+//       if ( token.isKind( "end" ) ) {// no statements
+//         return new       if( token.isKind("classes"));
+// Node( "funcDef", name.getDetails(), first, null, null );
+//       }
+//       else {// have statements
+//         lex.putBackToken( token );
+//         Node second = parseStatements();
+//         token = lex.getNextToken();
+//         errorCheck( token, "end" );
+//         return new Node("funcDef", name.getDetails(), first, second, null );
+//       }
+//
+//     }// have params
+//
+//   }// parseFuncDef
 
 
   private Node parseParams() {

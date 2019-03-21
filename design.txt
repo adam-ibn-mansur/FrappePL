@@ -10,8 +10,8 @@ Things in <  >  are variables.
 
 -> means a rule.
 
-When rules continue to multiple lines with no ->, 
-is just wrapping because page is too narrow to fit the single 
+When rules continue to multiple lines with no ->,
+is just wrapping because page is too narrow to fit the single
 rule.
 
 | means "or", and
@@ -20,28 +20,28 @@ is just an abbreviation for
   <a> -> <b>
   <a> -> <c>
 
-It is somewhat non-standard, but we use // ..... to put in 
+It is somewhat non-standard, but we use // ..... to put in
 explanatory comments.
 
 The idea of doing like
   <somethings> -> <something> | <something> <somethings>
 to say "1 or more <something>"  occurs a lot in the grammar.
 
-To avoid irritating "epsilon" things (in theory class epsilon 
-is the empty string) in the grammar, which are hard to parse, 
+To avoid irritating "epsilon" things (in theory class epsilon
+is the empty string) in the grammar, which are hard to parse,
 we often need to explicitly do multiple rules to cover all the
 options that epsilons introduce without actually having epsilons.
 
-This grammar is given in a form that is appropriate for 
-mechanical parsing, in the sense that it uses no short-cuts 
+This grammar is given in a form that is appropriate for
+mechanical parsing, in the sense that it uses no short-cuts
 like * (0 or more) or + (1 or more) or optional stuff.
 
-To avoid making the grammar bigger in silly ways, sometimes we 
-mandate things that Java doesn't, like methods have to have at 
+To avoid making the grammar bigger in silly ways, sometimes we
+mandate things that Java doesn't, like methods have to have at
 least one <statement> in their bodies
 
 ------------------------------------------------------------
-Here are the draft rules, with some explanatory notes following 
+Here are the draft rules, with some explanatory notes following
 (note that uppercase letters are used for tokens):
 ------------------------------------
 
@@ -59,21 +59,21 @@ Here are the draft rules, with some explanatory notes following
 <staticField> -> STATIC NAME |
                  STATIC NAME EQUALs <expression>
 
-<staticMethod> -> STATIC NAME LPAREN RPAREN LBRACE <statements> 
+<staticMethod> -> STATIC NAME LPAREN RPAREN LBRACE <statements>
                      RBRACE |
-                  STATIC NAME LPAREN <params> RPAREN LBRACE 
+                  STATIC NAME LPAREN <params> RPAREN LBRACE
                      <statements> RBRACE |
 
 <instanceField> -> NAME
 
-<constructor> -> CLASSNAME LPAREN RPAREN LBRACE <statements> 
+<constructor> -> CLASSNAME LPAREN RPAREN LBRACE <statements>
                     RBRACE
-                 CLASSNAME LPAREN <params> RPAREN LBRACE 
+                 CLASSNAME LPAREN <params> RPAREN LBRACE
                     <statements> RBRACE
 
-<instanceMethod> -> NAME LPAREN RPAREN LBRACE <statements> 
+<instanceMethod> -> NAME LPAREN RPAREN LBRACE <statements>
                       RBRACE |
-            NAME LPAREN <params> RPAREN LBRACE <statements> 
+            NAME LPAREN <params> RPAREN LBRACE <statements>
                       RBRACE |
 
 <params> -> <param> | NAME COMMA <params>
@@ -81,42 +81,42 @@ Here are the draft rules, with some explanatory notes following
 <statements> -> <statement> | <statement> <statements>
 
 <statement> -> NAME EQUALS <expression> | // assignment statement
-               <expression> | // meant to be a method call that 
+               <expression> | // meant to be a method call that
                               // doesn't use returned value
 
                <forStatement> |
 
                <ifStatement> |
 
-               RETURN <expression> | // can return a value or 
+               RETURN <expression> | // can return a value or
                RETURN                 // just return
 
-<forStatement> -> FOR LPAREN NAME = <expression> SEMICOLON 
-                        <expression> SEMICOLON NAME = 
+<forStatement> -> FOR LPAREN NAME = <expression> SEMICOLON
+                        <expression> SEMICOLON NAME =
                 <expression> RPAREN LBRACE <statements> RBRACE
 
 <ifStatement> -> IF LPAREN <expression> RPAREN LBRACE RBRACE |
-                 IF LPAREN <expression> RPAREN LBRACE 
+                 IF LPAREN <expression> RPAREN LBRACE
                       <statements> RBRACE |
-                 IF LPAREN <expression> RPAREN LBRACE RBRACE 
+                 IF LPAREN <expression> RPAREN LBRACE RBRACE
                       ELSE LBRACE RBRACE ||
-                 IF LPAREN <expression> RPAREN LBRACE 
+                 IF LPAREN <expression> RPAREN LBRACE
                       <statements> RBRACE ELSE LBRACE RBRACE ||
-                 IF LPAREN <expression> RPAREN LBRACE 
-                      <statements> RBRACE ELSE LBRACE 
+                 IF LPAREN <expression> RPAREN LBRACE
+                      <statements> RBRACE ELSE LBRACE
                       <statements> RBRACE
 
 <expression> -> NAME | STR | NUM | NULL | THIS | <call>
-   
+
 <call> -> <caller> DOT NAME LPAREN RPAREN |
           <caller> DOT NAME LPAREN <args> RPAREN |
-          NAME LPAREN RPAREN | // in some contexts don't need 
+          NAME LPAREN RPAREN | // in some contexts don't need
                                // to have anything before the .
           NAME LPAREN <args> RPAREN |  // so don't need the dot
           NEW CLASSNAME LPAREN RPAREN |
           NEW CLASSNAME LPAREN <args> RPAREN
 
-<caller> -> NAME |     // calling entity can be a variable 
+<caller> -> NAME |     // calling entity can be a variable
                        // holding a reference to an object
             CLASSNAME  // or a class
 
@@ -157,15 +157,15 @@ DOT is the single symbol "."
 
 Some tokens can be longer:
 --------------------------
-NAME starts with a lowercase letter followed by zero or more 
+NAME starts with a lowercase letter followed by zero or more
   letters or digits, intended to be a "variable"
-CLASSNAME starts with an uppercase letter followed by zero or 
+CLASSNAME starts with an uppercase letter followed by zero or
   more letters or digits, intended to be the name of a class
-STRING is most ordinary symbols in between " symbols, like 
-  "hello", and also can have a backslash followed by exactly 
-  3 digits giving a symbol number in decimal, like \013 for 
-  return, \097 for 'a' 
-NUM is an optional - symbol followed by 1 or more digits 
+STRING is most ordinary symbols in between " symbols, like
+  "hello", and also can have a backslash followed by exactly
+  3 digits giving a symbol number in decimal, like \013 for
+  return, \097 for 'a'
+NUM is an optional - symbol followed by 1 or more digits
   followed by a '.' followed by 0 or more digits
  (note that there is not separate integer type)
 
@@ -173,41 +173,42 @@ NUM is an optional - symbol followed by 1 or more digits
 Semantics (Meaning) and Related Implementation Ideas
 ---------
 
-A lot of the functionality in a typical language will be 
+A lot of the functionality in a typical language will be
    provided through a number of predefined classes:
 
 Num --- a Num instance is a numeric value
-             There is no distinct integer-only class, so 
-             various methods will provide whatever is really 
+             There is no distinct integer-only class, so
+             various methods will provide whatever is really
              needed
 
 Str --- a Str instance is very much like a Java String
 
-Bool --- has only two instances, with corresponding literals 
+Bool --- has only two instances, with corresponding literals
          true and false
 
-Lst ---  a list, provides functionality missing because there 
+Lst ---  a list, provides functionality missing because there
          are no arrays!
 
-Types of variables are determined by the type of object (class 
+Types of variables are determined by the type of object (class
   instance) whose reference is stored in the variable
 
 ------------------------------------------------------------
 Pragmatics
 ----------
 
-For simplicity, we will put all the classes for a Frappe 
-application in one file (we had discussed earlier doing it like 
-Java, where the compiler discovers all the class files it needs, but for now we won't bother).
+For simplicity, we will put all the classes for a Frappe
+application in one file (we had discussed earlier doing it like
+Java, where the compiler discovers all the class files it needs, but for now
+we won't bother).
 
 And, to run Frappe on a program, say named "test3", we will do
 
 java Frappe test3 Fish main
 
-where "Fish" is the name of a class in the file "test3" and 
-  "main" is the name of a static method in that class that 
-  takes no input arguments, and is the starting point of 
-  execution (except that in Frappe the first thing that needs 
+where "Fish" is the name of a class in the file "test3" and
+  "main" is the name of a static method in that class that
+  takes no input arguments, and is the starting point of
+  execution (except that in Frappe the first thing that needs
   to happen is initialization of all the static variables).
 
 ---------------------------------------------------
@@ -242,33 +243,33 @@ Num:        [immutable]
      cos, sin
 
     constructor:
-       new Num( string )  [construct a Num from the string]    
+       new Num( string )  [construct a Num from the string]
 
 Lst:         [mutable]
    constructor:
       Lst( number )   [construct a list with number null's]
    instance methods:
       size()
-      get( index )        
+      get( index )
       set( index, value ) [replace item at index]
       app( value )        [append]
       ins( index, value ) [insert value at index]
 
-      sub( begin, end )   [create and return a new Lst 
+      sub( begin, end )   [create and return a new Lst
                            that is the sublist of this one
                            from position begin through end]
       del( index )    [remove the item in position index]
       cat( lst )         [create and return a new Lst that
                           is a copy of this one concatenated
                           with lst]
-    
+
 Str:      [immutable]
    instance methods:
       len()     [length]
       sub( begin, end )   [return a new Str consisting of
                            symbols in position "begin" up to
                            and including position "end",
-                           so "fishface".sub(3,3) returns 
+                           so "fishface".sub(3,3) returns
                            "h"]
       cat( s )       [return concatenation of this string
                            and s]
