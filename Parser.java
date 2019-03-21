@@ -21,9 +21,9 @@ public class Parser {
     Node prgrm;
     Token token = lex.getNextToken();
     errorCheck(token, "class");
-    lex.putBackToken();
+    lex.putBackToken(token);
     prgrm = parseClasses();
-    return new Node("program", prgrm, null, null);
+    return new Node("program", prgrm, null, null, null);
   }
 
   public Node parseClasses() {
@@ -34,7 +34,7 @@ public class Parser {
       return new Node( "classes", first, null, null, null)
     }
     else {
-      lex.putBackToken();
+      lex.putBackToken(token);
       Node second = parseClasses();
       return new Node( "classes", first, second, null, null);
     }
@@ -66,7 +66,7 @@ public class Parser {
       return new Node( "member", first, null, null, null)
     }
     else {
-      lex.putBackToken();
+      lex.putBackToken(token);
       Node second = parseMembers();
       return new Node( "member", first, second, null, null);
     }
@@ -75,119 +75,188 @@ public class Parser {
   public Node parseMember() {
     System.out.println("------> parsing <member>:");
     Token token = lex.getNextToken();
-    // errorCheck(token, "");
     if( token.isKind("static") ) {
-      //wewert
-      lex.getNextToken();
+      token = lex.getNextToken();
+      errorCheck(token, "name");
+      Token name = token;
       token = lex.getNextToken();
       if ( token.isKind("(") ) {
-        lex.putBackToken();
-        lex.putBackToken();
-        lex.putBackToken();
-        Node staticMethod = parseStaticMethod();
-        return new Node("member", staticMethod, null, null);
+        Node restOfMethod = parseRestOfMethod();
+        return new Node("staticmethod", name.getDetails(), restOfMethod, null, null);
       }
-      else {
+      else if ( token.isKind("=") {
+        lex.putBackToken(token);
+        lex.putBackToken(name);
         Node staticField = parseStaticField();
-        return new Node("member", staticField, null, null);
+        return new Node("member", staticField, null, null, null);
+      } else {
+        lex.putBackToken(token);
+        return new Node("staticField", name.getDetails(), null, null)
       }
     }
     else if ( token.isKind("classname") ) {
-      lex.putBackToken();
-      Node constructor = parseConstructor();
-      return new Node("member", constructor, null, null);
-    } else if ( token.isKind("name") ) {
+      Token getRidOfLeftParen = lex.getNextToken(); //consume (
+      Node restOfMethod = parseRestOfMethod();
+      return new Node("classname", token.getDetails(), restOfMethod, null, null);
+    }
+    else if ( token.isKind("name") ) {
+      Token name = token;
       token = lex.getNextToken();
       if( token.isKind("(") ) {
-        lex.putBackToken().putBackToken();
-        Node insMethod = parseInstanceMethod();
-        return new Node("member", insMethod, null, null);
+        Node restOfMethod = parserestOfMethod();
+        return new Node("instancemethod", name.getDetails(), restOfMethod, null, null);
       }
       else {
-        lex.putBackToken().putBackToken();
-        Node insField = parseInstanceField();
-        return new Node("member", insField, null, null);
+        lex.putBackToken(token);
+        return new Node("instanceField", name.getDetails(), null, null, null);
       }
     } else {
       System.out.println("There is an error in parseMember()");
     }
   }
 
-  public Node parseStaticField() {
-    System.out.println("------> parsing <staticField>");
+  public Node parseRestOfMethod() {
+    System.out.println("------> parsing <restOfMethod>:");
     Token token = lex.getNextToken();
-    errorCheck(token, "static");
-
-    token = lex.getNextToken();
-    errorCheck(token, "name");
-    String name = token.details;
-
-    token = lex.getNextToken();
-    if (token.isKind("=") ) {
-      Node expr = parseExpression();
-      return new Node("staticfield", name, expr, null, null);
+    if ( token.isKind(")")) {
+      Node methodBody = parseMethodBody();
+      return new Node("restofmethod", methodBody, null, null, null);
     } else {
-      lex.putBackToken();
-      return new Node ("staticfield", name, null, null);
+      lex.putBackToken(token);
+      Node params = parseParams();
+      token = lex.getNextToken();
+      Node methodBody = parseMethodBody();
+      return new Node("restofmethod", params, methodBody, null, null);
     }
   }
 
-  public Node parseStaticMethod() {
-    System.out.println("------> parsing <staticField>");
-    Node statements;
-    Node params;
-
+  public Node parseMethodBody() {
+    System.out.println("-----> parsing <methodBody>:");
     Token token = lex.getNextToken();
-    errorCheck(token, "static");
-
-    token = lex.getNextToken();
-    errorCheck(token, "name");
-
-    token = lex.getNextToken();
-    errorCheck(token, "(");
-
-    token = lex.getNextToken();
-    if ( token.isKind(")") ) {
-      token.getNextToken();
-      errorCheck(token, "{");
-      statements = parseStatements();
-
-      token.getNextToken();
-      errorCheck(token, "}");
-      return new Node ("staticMethod", name, statements, null, null);
+    if ( token.isKind("{") ) {
+      token = lex.getNextToken();
+      if ( token.isKind("}") ) {
+        return new Node("methodbody", null, null, null, null);
+      }
+      else {
+        lex.putBackToken(token);
+        Node statements = parseStatements();
+        lex.getNextToken(); //consume }
+        return new Node("methodBody", statements, null, null, null);
+      }
     }
-    lex.putBackToken();
-    params = parseParams();
-
-    token.getNextToken();
-    errorCheck(token, ")");
-
-    token.getNextToken();
-    errorCheck(token, "{");
-    statements = parseStatements();
-
-    token.getNextToken();
-    errorCheck(token, "}");
-    return new Node ("staticMethod", name, params, statements, null, null);
   }
-}
 
-public Node parseConstructor() {
-  //stuff
-}
+  public Node parseStatements() {
+    System.out.println("-----> parsing <statements>:");
+    Node first = parseStatement();
+    Token token = lex.getNextToken();
+    if ( token.isKind("}") ) {
+      return new Node( "statement", first, null, null, null)
+    }
+    else {
+      lex.putBackToken(token);
+      Node second = parseStatements();
+      return new Node( "statements", first, second, null, null);
+    }
+  }
 
-public Node parseInstanceField() {
-  System.out.println("------> parsing <instanceField>");
-  Token token = lex.getNextToken();
-  errorCheck(token, "name");
+  public Node parseStatement() {
+    System.out.println("-----> parsing <statement>:");
+    Token token = lex.getNextToken();
+    if ( token.isKind("name") ) {
+      lex.getNextToken();
+      Node rhs = parseRHS();
+      return new Node("statement", token.getDetails(), rhs, null, null);
+    }
+    else if ( token.isKind("new") ) { //check updated Design.txt
+      token = lex.getNextToken(); //classname
+      Token className = token;         //store classname
+      token = lex.getNextToken(); //get rid of (
+      token = lex.getNextToken(); //is this a )?
+      if ( token.isKind(")") ) {
+        return new Node("new", className.getDetails(), null, null, null);
+      }
+    }
+  }
 
-  String insFieldName = token.details;
-  return new Node ("instancefield", insFieldName, null, null);
-}
 
-public Node parseInstanceMethod() {
-  //stuff
-}
+// Handled in parseMember();
+//   public Node parseStaticField() {
+//     System.out.println("------> parsing <staticField>");
+//     Token token = lex.getNextToken();
+//     errorCheck(token, "static");
+//
+//     token = lex.getNextToken();
+//     errorCheck(token, "name");
+//     String name = token.details;
+//
+//     token = lex.getNextToken();
+//     if (token.isKind("=") ) {
+//       Node expr = parseExpression();
+//       return new Node("staticfield", name, expr, null, null);
+//     } else {
+//       lex.putBackToken();
+//       return new Node ("staticfield", name, null, null);
+//     }
+//   }
+//
+//   public Node parseStaticMethod() {
+//     System.out.println("------> parsing <staticField>");
+//     Node statements;
+//     Node params;
+//
+//     Token token = lex.getNextToken();
+//     errorCheck(token, "static");
+//
+//     token = lex.getNextToken();
+//     errorCheck(token, "name");
+//
+//     token = lex.getNextToken();
+//     errorCheck(token, "(");
+//
+//     token = lex.getNextToken();
+//     if ( token.isKind(")") ) {
+//       token.getNextToken();
+//       errorCheck(token, "{");
+//       statements = parseStatements();
+//
+//       token.getNextToken();
+//       errorCheck(token, "}");
+//       return new Node ("staticMethod", name, statements, null, null);
+//     }
+//     lex.putBackToken();
+//     params = parseParams();
+//
+//     token.getNextToken();
+//     errorCheck(token, ")");
+//
+//     token.getNextToken();
+//     errorCheck(token, "{");
+//     statements = parseStatements();
+//
+//     token.getNextToken();
+//     errorCheck(token, "}");
+//     return new Node ("staticMethod", name, params, statements, null, null);
+//   }
+// }
+//
+// public Node parseConstructor() {
+//   //stuff
+// }
+//
+// public Node parseInstanceField() {
+//   System.out.println("------> parsing <instanceField>");
+//   Token token = lex.getNextToken();
+//   errorCheck(token, "name");
+//
+//   String insFieldName = token.details;
+//   return new Node ("instancefield", insFieldName, null, null);
+// }
+//
+// public Node parseInstanceMethod() {
+//   //stuff
+// }
 
 // public Node parseProgram() {
 //   System.out.println("-----> parsing <program>:");

@@ -12,6 +12,11 @@ class Multiply {
         IO.print(e)
         return e
     }
+
+    empty() {
+
+    }
+    
 }
 
 class Main {
